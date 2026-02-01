@@ -2,6 +2,8 @@
 
 `workout-planner` is a piece of software to plan workout in a gym.
 
+https://docs.google.com/document/d/1L7K-nXjF7tQsCyj7gGSlBUr8qs_8QxlbkmYruckOSds/edit?usp=sharing
+
 # Dev Setup
 
 Install go (this one is for PI)
