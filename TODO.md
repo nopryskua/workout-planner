@@ -1,1 +1,1 @@
-API with mock persistence
+Generate server API boilerplate

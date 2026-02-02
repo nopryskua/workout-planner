@@ -1,0 +1,193 @@
+openapi: 3.0.3
+info:
+  title: Workout API
+  version: 1.0.0
+  description: |
+    API for generating, adjusting, and completing workouts.
+
+    Workout state machine:
+      - States: PENDING, COMPLETED, ABANDONED
+      - At most one PENDING workout per user
+      - Transitions:
+          * PENDING -> COMPLETED
+          * PENDING -> ABANDONED
+servers:
+  - url: https://api.example.com
+paths:
+  /v1/workouts:
+    get:
+      summary: List workouts
+      description: Lists all workouts for the authenticated user with pagination.
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: Paginated list of workouts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkoutList'
+    post:
+      summary: Generate a new workout
+      description: |
+        Generates a new workout in PENDING state.
+        Returns 409 Conflict if a PENDING workout already exists.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PromptRequest'
+      responses:
+        '201':
+          description: Workout created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workout'
+        '409':
+          description: A pending workout already exists
+  /v1/workouts/{id}:
+    get:
+      summary: Get workout by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Workout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workout'
+        '404':
+          description: Workout not found
+  /v1/workouts/current:
+    get:
+      summary: Get current pending workout
+      description: Returns the PENDING workout or 404 if none exists.
+      responses:
+        '200':
+          description: Current pending workout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workout'
+        '404':
+          description: No pending workout
+    delete:
+      summary: Abandon current workout
+      description: Marks the current PENDING workout as ABANDONED.
+      responses:
+        '204':
+          description: Workout abandoned
+        '404':
+          description: No pending workout
+  /v1/workouts/current/adjust:
+    post:
+      summary: Adjust current workout
+      description: Updates the PENDING workout based on a natural language prompt.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PromptRequest'
+      responses:
+        '200':
+          description: Updated workout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workout'
+        '404':
+          description: No pending workout
+  /v1/workouts/current/complete:
+    post:
+      summary: Complete current workout
+      description: |
+        Updates the PENDING workout based on a prompt and transitions it to COMPLETED.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PromptRequest'
+      responses:
+        '200':
+          description: Completed workout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workout'
+        '404':
+          description: No pending workout
+components:
+  schemas:
+    WorkoutList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Workout'
+        limit:
+          type: integer
+        offset:
+          type: integer
+        total:
+          type: integer
+      required:
+        - items
+        - limit
+        - offset
+    Workout:
+      type: object
+      properties:
+        id:
+          type: string
+        status:
+          type: string
+          enum:
+            - PENDING
+            - COMPLETED
+            - ABANDONED
+        prompt:
+          type: string
+          description: Original generation prompt
+        content:
+          type: object
+          description: Structured workout plan (implementation-specific)
+          additionalProperties: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - status
+        - created_at
+    PromptRequest:
+      type: object
+      properties:
+        prompt:
+          type: string
+      required:
+        - prompt
