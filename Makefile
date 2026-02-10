@@ -6,8 +6,8 @@ all: lint format
 .PHONY: tools
 tools:
 	@echo "Installing tools..."
-	go install github.com/pb33f/libopenapi-validator/cmd/validate@latest
-	go install github.com/google/yamlfmt/cmd/yamlfmt@latest
+	go install github.com/pb33f/libopenapi-validator/cmd/validate@v0.11.1
+	go install github.com/google/yamlfmt/cmd/yamlfmt@v0.21.0
 	@echo "Tools installed. Make sure installed go binaries are in your PATH."
 
 .PHONY: lint
