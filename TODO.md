@@ -1,1 +1,1 @@
-Generate server API boilerplate
+Implement StrictServerInterface with in-memory and use in test

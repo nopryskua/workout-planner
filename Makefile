@@ -1,7 +1,7 @@
 OPENAPI_SPEC := api.yaml
 
 .PHONY: all
-all: lint format
+all: lint format generate
 
 .PHONY: tools
 tools:
@@ -14,6 +14,10 @@ tools:
 lint: tools
 	@echo "Validating OpenAPI spec..."
 	validate $(OPENAPI_SPEC)
+
+.PHONY: generate
+generate:
+	go generate ./...
 
 .PHONY: format
 format: tools
